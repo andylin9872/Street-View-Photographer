@@ -7,7 +7,9 @@
 ---
 
 <img width="2559" height="1302" alt="Street View Photographer Demo" src="https://github.com/user-attachments/assets/d3c9ad3d-abb7-467a-bdf2-eeaef448d4a5" />
+
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
+
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ## ✨ Features
