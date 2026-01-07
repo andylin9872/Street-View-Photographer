@@ -1,0 +1,339 @@
+/* =========================================
+   1. 導演觀景窗 (白框與遮罩)
+   ========================================= */
+
+/* 全螢幕覆蓋層：確保滑鼠穿透 */
+#sv-scout-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 99999;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* --- 新增：星空投影 Canvas --- */
+#sv-star-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    /* 位於白框之後 */
+}
+
+/* 觀景窗白框 */
+#sv-focal-frame {
+    border: 2px solid rgba(255, 255, 255, 0.95);
+    /* 遮罩陰影 (Vignette) */
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
+    position: relative;
+    transition: width 0.1s, height 0.1s;
+    /* 平滑縮放 */
+    min-width: 1px;
+    min-height: 1px;
+    display: none;
+}
+
+/* 毫米數標籤 */
+.sv-frame-info {
+    position: absolute;
+    bottom: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+/* 九宮格輔助線 */
+.sv-grid {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.g-h1 {
+    top: 33.3%;
+    width: 100%;
+    height: 1px;
+}
+
+.g-h2 {
+    top: 66.6%;
+    width: 100%;
+    height: 1px;
+}
+
+.g-v1 {
+    left: 33.3%;
+    height: 100%;
+    width: 1px;
+}
+
+.g-v2 {
+    left: 66.6%;
+    height: 100%;
+    width: 1px;
+}
+
+/* =========================================
+   2. 主控制按鈕 (右側圓形圖示)
+   ========================================= */
+
+#sv-settings-btn {
+    position: fixed;
+    bottom: 60px;
+    /* 避開街景小地圖 */
+    right: 60px;
+    z-index: 100001;
+    width: 44px;
+    height: 44px;
+    background: #222;
+    color: white;
+    border: 2px solid #555;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    transition: all 0.2s ease;
+}
+
+#sv-settings-btn:hover {
+    background: #444;
+    transform: scale(1.05);
+}
+
+#sv-settings-btn.active {
+    background: #4285f4;
+    border-color: #4285f4;
+}
+
+#sv-settings-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+/* =========================================
+   3. 設定面板 UI
+   ========================================= */
+
+#sv-ui-panel {
+    position: fixed;
+    bottom: 180px;
+    right: 20px;
+    width: 260px;
+    background: rgba(28, 28, 28, 0.95);
+    padding: 16px;
+    border-radius: 12px;
+    z-index: 100000;
+    color: #eee;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    border: 1px solid #444;
+    display: none;
+}
+
+/* 標題列 */
+.sv-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+}
+
+.sv-header h2 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+}
+
+#sv-close-panel {
+    cursor: pointer;
+    color: #888;
+    transition: color 0.2s;
+}
+
+#sv-close-panel:hover {
+    color: #fff;
+}
+
+/* 通用區塊 */
+.sv-section {
+    margin-bottom: 16px;
+}
+
+/* 開關 (Toggle Switch) */
+.sv-switch-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.sv-switch-label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #4285f4;
+}
+
+.sv-switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 18px;
+}
+
+.sv-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #555;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked+.slider {
+    background-color: #4285f4;
+}
+
+input:checked+.slider:before {
+    transform: translateX(16px);
+}
+
+/* 標籤與輸入框 */
+.sv-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: #aaa;
+    margin-bottom: 8px;
+}
+
+/* 數值輸入框 */
+input[type=number].sv-num-input {
+    background: #111;
+    border: 1px solid #555;
+    color: #4285f4;
+    font-weight: bold;
+    border-radius: 4px;
+    width: 50px;
+    padding: 3px 5px;
+    font-size: 12px;
+    text-align: right;
+    font-family: monospace;
+}
+
+input[type=number].sv-num-input:focus {
+    outline: none;
+    border-color: #4285f4;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* 滿版滑桿 */
+#sv-focal-slider {
+    width: 100%;
+    display: block;
+    margin: 0 0 10px 0;
+    box-sizing: border-box;
+    accent-color: #4285f4;
+    cursor: pointer;
+    height: 4px;
+}
+
+/* 快速按鈕列 */
+.sv-btn-row {
+    display: flex;
+    gap: 6px;
+}
+
+#sv-ui-panel button {
+    background: #444;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 6px;
+    font-size: 11px;
+    flex: 1;
+    transition: background 0.2s;
+}
+
+#sv-ui-panel button.active {
+    background: #4285f4;
+    font-weight: bold;
+}
+
+#sv-ui-panel button:hover {
+    background: #555;
+}
+
+/* 下拉選單 */
+#sv-ui-panel select {
+    width: 100%;
+    background: #333;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 6px;
+    font-size: 12px;
+    box-sizing: border-box;
+    outline: none;
+}
+
+#sv-ui-panel select:focus {
+    border-color: #4285f4;
+}
+
+/* 狀態列 */
+#sv-fov-debug {
+    font-size: 10px;
+    color: #666;
+    text-align: right;
+    margin-top: 10px;
+    border-top: 1px solid #333;
+    padding-top: 5px;
+}

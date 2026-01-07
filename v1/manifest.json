@@ -1,0 +1,27 @@
+{
+    "manifest_version": 3,
+    "name": "Street View Photographer",
+    "version": "1.0.0",
+    "description": "Simulate cinematic focal lengths and aspect ratios directly on Google Street View.",
+    "icons": {
+        "16": "icon16.png",
+        "48": "icon48.png",
+        "128": "icon128.png"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "*://www.google.com/maps*",
+                "*://www.google.com.tw/maps*",
+                "*://maps.google.com/*"
+            ],
+            "css": [
+                "styles.css"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "run_at": "document_idle"
+        }
+    ]
+}
